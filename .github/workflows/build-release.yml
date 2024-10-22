@@ -30,7 +30,7 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile run.py  
+        python build.py
       shell: bash
 
     - name: Upload artifact
@@ -48,7 +48,7 @@ jobs:
     - name: Checkout repository on release branch
       uses: actions/checkout@v3
       with:
-        ref: release  
+        ref: release 
 
     - name: Download build artifacts for Windows
       uses: actions/download-artifact@v3
@@ -68,9 +68,9 @@ jobs:
     - name: Copy artifacts to the repo
       run: |
         mkdir -p build-output
-        cp built-executable-windows-latest/run.exe build-output/AirImage-windows.exe
-        cp built-executable-ubuntu-latest/run build-output/AirImage-ubuntu
-        cp built-executable-macos-latest/run build-output/AirImage-macos
+        cp run.exe build-output/AirImage-windows.exe  
+        cp run build-output/AirImage-ubuntu
+        cp run build-output/AirImage-macos
 
     - name: Configure Git
       run: |
