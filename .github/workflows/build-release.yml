@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build and Release to Branch
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3  
+      uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -36,17 +36,19 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: built-executable-${{ matrix.os }}  
+        name: built-executable-${{ matrix.os }}
         path: |
-          dist/run.exe  # Windows 上的路径
-          dist/run  # Ubuntu 和 macOS 上的路径
+          dist/run.exe  
+          dist/run  
 
-  release:
+  push_to_release:
     needs: build
-    runs-on: ubuntu-latest  
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
+    - name: Checkout repository on release branch
       uses: actions/checkout@v3
+      with:
+        ref: release  
 
     - name: Download build artifacts for Windows
       uses: actions/download-artifact@v3
@@ -63,37 +65,20 @@ jobs:
       with:
         name: built-executable-macos-latest
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_name: 'AirImage ${{ github.ref_name }} Release'  
-        draft: false
-        prerelease: false
+    - name: Copy artifacts to the repo
+      run: |
+        mkdir -p build-output
+        cp built-executable-windows-latest/run.exe build-output/AirImage-windows.exe
+        cp built-executable-ubuntu-latest/run build-output/AirImage-ubuntu
+        cp built-executable-macos-latest/run build-output/AirImage-macos
 
-    - name: Upload Release Asset for Windows
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: built-executable-windows-latest/run.exe  
-        asset_name: AirImage-windows.exe
-        asset_content_type: application/octet-stream
+    - name: Configure Git
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
 
-    - name: Upload Release Asset for Ubuntu
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: built-executable-ubuntu-latest/run  
-        asset_name: AirImage-ubuntu
-        asset_content_type: application/octet-stream
-
-    - name: Upload Release Asset for macOS
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: built-executable-macos-latest/run  
-        asset_name: AirImage-macos
-        asset_content_type: application/octet-stream
-        
+    - name: Commit and push changes
+      run: |
+        git add build-output/*
+        git commit -m "Add built executables for ${{ github.ref_name }}"
+        git push origin release  
