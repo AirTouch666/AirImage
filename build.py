@@ -9,7 +9,5 @@ PyInstaller.__main__.run([
     '--name=AirImage',
     '--onefile',
     '--add-data=templates:templates',
-    '--add-data=static:static',
-    '--icon=static/favicon.ico',
     '--hidden-import=PIL._tkinter_finder'
 ])
