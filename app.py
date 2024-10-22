@@ -11,15 +11,20 @@ import io
 app = Flask(__name__)
 
 if getattr(sys, 'frozen', False):
-    base_path = os.path.dirname(sys.executable)
+    # 如果是打包后的可执行文件
+    base_path = sys._MEIPASS
 else:
+    # 如果是开发环境
     base_path = os.path.abspath(os.path.dirname(__file__))
 
-CONFIG_FILE = os.path.join(base_path, 'config.json')
+# 将配置文件和上传文件夹放在用户主目录下
+user_home = os.path.expanduser('~')
+CONFIG_FILE = os.path.join(user_home, 'AirImage_config.json')
+UPLOAD_FOLDER = os.path.join(user_home, 'AirImage_uploads')
 
-app.config['UPLOAD_FOLDER'] = os.path.join(base_path, 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def load_or_create_config():
     if os.path.exists(CONFIG_FILE):
