@@ -96,3 +96,4 @@ jobs:
         asset_path: built-executable-macos-latest/run  
         asset_name: AirImage-macos
         asset_content_type: application/octet-stream
+        
